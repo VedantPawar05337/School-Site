@@ -42,6 +42,10 @@ def about():
 def contact():
     return render_template('contact.html')
 
+@app.route('/download_csv')
+def download_csv():
+    return send_file('enquiries.csv', as_attachment=True)
+
 # @app.route('/submit_enquiry', methods=['POST'])
 # def submit_enquiry():
 #     if request.method == 'POST':

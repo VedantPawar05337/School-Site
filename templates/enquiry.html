@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Enquiry Form</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="form-container">
+        <h2>Enquiry Form 📩</h2>
+        <form method="POST" action="/submit_enquiry">
+            <label>Child's Name</label>
+            <input type="text" name="child_name" required>
+
+            <label>Parent's Name</label>
+            <input type="text" name="parent_name" required>
+
+            <label>Email</label>
+            <input type="email" name="email" required>
+
+            <label>Phone Number</label>
+            <input type="tel" name="phone" required>
+
+            <label>Message</label>
+            <textarea name="message" rows="4" placeholder="Any specific query?"></textarea>
+
+            <button type="submit">Submit Enquiry</button>
+        </form>
+    </div>
+</body>
+</html>

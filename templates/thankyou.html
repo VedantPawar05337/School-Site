@@ -49,18 +49,8 @@
         <h2>🎉 Thank You!</h2>
         <p>Your enquiry has been submitted successfully. <br> We'll get in touch with you soon!</p>
         <a href="/"><button>⬅ Back to Home</button></a>
-    </div>
-    {% if show_print %}
-    <div class="print-msg">
-        <p>This page will automatically open the print dialog.</p>
+        <a href="/download_enquiry_pdf"><button>⬇ Download Enquiry PDF</button></a>
     </div>
 
-    <!-- Auto Trigger Print -->
-    <script>
-        window.onload = function () {
-            window.print();
-        };
-    </script>
-    {% endif %}
 </body>
 </html>

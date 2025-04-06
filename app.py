@@ -1,39 +1,22 @@
 from flask import Flask, render_template, request
-import csv
+from flask_mail import Mail, Message
 import os
-from datetime import datetime 
 
 app = Flask(__name__)
 
+# Email Configuration
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')  # Your Gmail
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')  # Gmail App Password
+
+mail = Mail(app)
+
 @app.route('/')
-def home():
+def index():
     return render_template('index.html')
 
-@app.route('/enquiry')
-def enquiry():
-    return render_template('enquiry.html')
-
-@app.route('/submit_enquiry', methods=['POST'])
-def submit_enquiry():
-    if request.method == 'POST':
-        child_name = request.form['child_name']
-        parent_name = request.form['parent_name']
-        email = request.form['email']
-        phone = request.form['phone']
-        message = request.form['message']
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-        file_exists = os.path.isfile('enquiries.csv')
-
-        # Write to CSV with headers if file doesn't exist
-        with open('enquiries.csv', mode='a', newline='') as f:
-            writer = csv.writer(f)
-            if not file_exists:
-                writer.writerow(['Child Name', 'Parent Name', 'Email', 'Phone', 'Message', 'Date & Time'])
-            writer.writerow([child_name, parent_name, email, phone, message, timestamp])
-
-        return render_template('thankyou.html', parent_name=parent_name)
-    
 @app.route('/about')
 def about():
     return render_template('about.html')
@@ -42,47 +25,52 @@ def about():
 def contact():
     return render_template('contact.html')
 
-@app.route('/download_csv')
-def download_csv():
-    return send_file('enquiries.csv', as_attachment=True)
-
-# @app.route('/submit_enquiry', methods=['POST'])
-# def submit_enquiry():
-#     if request.method == 'POST':
-#         child_name = request.form['child_name']
-#         parent_name = request.form['parent_name']
-#         email = request.form['email']
-#         phone = request.form['phone']
-#         message = request.form['message']
-
-#         # Write to CSV
-#         with open('enquiries.csv', mode='a', newline='') as f:
-#             writer = csv.writer(f)
-#             writer.writerow([child_name, parent_name, email, phone, message])
-
-#         return render_template('thankyou.html')
 @app.route('/admission')
 def admission():
-    return render_template('admission_form.html')
+    return render_template('admission.html')
 
+# --- Enquiry Form Submission ---
+@app.route('/submit_enquiry', methods=['POST'])
+def submit_enquiry():
+    name = request.form['name']
+    dob = request.form['dob']
+    mobile_father = request.form['mobile_father']
+    mobile_mother = request.form['mobile_mother']
 
+    msg = Message(subject='📩 New Enquiry Submission',
+                  sender=app.config['MAIL_USERNAME'],
+                  recipients=[app.config['MAIL_USERNAME']],
+                  body=f'''New enquiry received:
+
+👶 Name: {name}
+🎂 Date of Birth: {dob}
+📱 Father’s Mobile: {mobile_father}
+📱 Mother’s Mobile: {mobile_mother}
+''')
+    mail.send(msg)
+    return render_template('thankyou.html', name=name)
+
+# --- Admission Form Submission ---
 @app.route('/submit_admission', methods=['POST'])
 def submit_admission():
-    data = request.form.to_dict()
-    # Add timestamp
-    from datetime import datetime
-    data['timestamp'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    student_name = request.form['student_name']
+    dob = request.form['dob']
+    address = request.form['address']
+    email = request.form['email']
+    phone = request.form['phone']
+    parent_name = request.form['parent_name']
 
-    # Save to CSV or Google Sheets
-    with open('admissions.csv', 'a', newline='') as f:
-        writer = csv.writer(f)
-        if f.tell() == 0:  # If file is empty, write headers
-            writer.writerow(data.keys())
-        writer.writerow(data.values())
+    msg = Message(subject='📝 New Admission Form Submission',
+                  sender=app.config['MAIL_USERNAME'],
+                  recipients=[app.config['MAIL_USERNAME']],
+                  body=f'''New admission form submitted:
 
-    return render_template('thankyou.html', name=data.get('child_name'))
-
-
-
-if __name__ == '__main__':
-    app.run(debug=True)
+👦 Student Name: {student_name}
+🎂 DOB: {dob}
+🏠 Address: {address}
+📧 Email: {email}
+📞 Phone: {phone}
+👨‍👩‍👧 Parent/Guardian: {parent_name}
+''')
+    mail.send(msg)
+    return render_template('thankyou.html', name=student_name)

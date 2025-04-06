@@ -12,13 +12,13 @@
         <h2>🌟Kiddies Pre-Primary School 🌟</h2>
         <p>✨Where Little Minds Shine Bright ✨</p>
 
-        <div class="buttons">
-            <a href="/enquiry"><button>Enquiry Form</button></a>
-            <a href="/about"><button>About Us</button></a>
-            <a href="/contact"><button>Contact Info</button></a>
-            <a href="{{ url_for('admission') }}" class="btn-admission">Apply for Admission</a>
-            
-        </div>
+       <div class="button-container">
+        <a href="{{ url_for('enquiry') }}" class="nav-btn">Enquiry Form</a>
+        <a href="{{ url_for('about') }}" class="nav-btn">About Us</a>
+        <a href="{{ url_for('contact') }}" class="nav-btn">Contact Info</a>
+        <a href="{{ url_for('admission') }}" class="nav-btn">Apply for Admission</a>
+      </div>
+
 
         <hr>
 

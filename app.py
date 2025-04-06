@@ -39,7 +39,8 @@ def enquiry_form():
 
 @app.route('/submit_enquiry', methods=['POST'])
 def submit_enquiry():
-    name = request.form['name']
+    child_name = request.form['child_name']
+    parent_name = request.form['parent_name']
     email = request.form['email']
     phone = request.form['phone']
     message = request.form['message']
@@ -51,14 +52,15 @@ def submit_enquiry():
     msg.body = f"""
     Enquiry Form Details:
 
-    Name: {name}
+    Child's Name: {child_name}
+    Parent's Name: {parent_name}
     Email: {email}
     Phone: {phone}
     Message: {message}
     """
     mail.send(msg)
 
-    return redirect(url_for('thankyou', name=name))
+    return redirect(url_for('thankyou', name=child_name))
 
 @app.route('/admission')
 def admission_form():

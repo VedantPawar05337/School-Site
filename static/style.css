@@ -150,3 +150,21 @@ input, textarea {
 .btn-admission:hover {
     background-color: #1565c0;
 }
+.nav-btn {
+    background-color: #ffb300; /* bright yellow-orange */
+    color: white;
+    padding: 12px 20px;
+    margin: 10px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    text-decoration: none;
+    display: inline-block;
+    transition: background-color 0.3s;
+}
+
+.nav-btn:hover {
+    background-color: #ffca28; /* lighter on hover */
+    color: #000;
+}

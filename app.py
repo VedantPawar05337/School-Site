@@ -33,6 +33,10 @@ def thankyou():
     name = request.args.get('name', 'User')
     return render_template('thankyou.html', name=name)
 
+@app.route('/enquiry')
+def enquiry_form():
+    return render_template('enquiry.html')
+
 @app.route('/submit_enquiry', methods=['POST'])
 def submit_enquiry():
     name = request.form['name']
@@ -55,6 +59,11 @@ def submit_enquiry():
     mail.send(msg)
 
     return redirect(url_for('thankyou', name=name))
+
+@app.route('/admission')
+def admission_form():
+    return render_template('admission.html')
+
 
 @app.route('/submit_admission', methods=['POST'])
 def submit_admission():

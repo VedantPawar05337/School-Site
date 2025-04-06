@@ -66,34 +66,65 @@ def submit_enquiry():
 def admission_form():
     return render_template('admission.html')
 
-
 @app.route('/submit_admission', methods=['POST'])
 def submit_admission():
-    name = request.form['name']
-    email = request.form['email']
-    phone = request.form['phone']
+    form_no = request.form['form_no']
+    standard = request.form['standard']
+    date = request.form['date']
+    child_name = request.form['child_name']
     dob = request.form['dob']
-    address = request.form['address']
+    aadhar = request.form['aadhar']
+    father_mobile = request.form['father_mobile']
+    mother_mobile = request.form['mother_mobile']
+    admission_to = request.form.getlist('admission_to')  # checkboxes return a list
+    last_school = request.form['last_school']
     father_name = request.form['father_name']
+    father_qualification = request.form['father_qualification']
+    father_occupation = request.form['father_occupation']
+    father_address = request.form['father_address']
     mother_name = request.form['mother_name']
+    mother_qualification = request.form['mother_qualification']
+    mother_occupation = request.form['mother_occupation']
+    mother_address = request.form['mother_address']
+    siblings = request.form['siblings']
+    allergy = request.form['allergy']
 
+    # Prepare the message
     msg = Message(subject="New Admission Form Submission",
                   sender=app.config['MAIL_USERNAME'],
                   recipients=[app.config['MAIL_USERNAME']])
     msg.body = f"""
-    Admission Form Details:
+    Admission Form Submission:
 
-    Name: {name}
-    Email: {email}
-    Phone: {phone}
-    DOB: {dob}
-    Address: {address}
+    Form No: {form_no}
+    Standard: {standard}
+    Date: {date}
+    Child Name: {child_name}
+    Date of Birth: {dob}
+    Aadhar No: {aadhar}
+    Father's Mobile: {father_mobile}
+    Mother's Mobile: {mother_mobile}
+    Admission Sought To: {', '.join(admission_to)}
+    Last School Attended: {last_school}
+
     Father's Name: {father_name}
+    Father's Qualification: {father_qualification}
+    Father's Occupation: {father_occupation}
+    Father's Occupation Address: {father_address}
+
     Mother's Name: {mother_name}
+    Mother's Qualification: {mother_qualification}
+    Mother's Occupation: {mother_occupation}
+    Mother's Occupation Address: {mother_address}
+
+    Siblings Studying In: {siblings}
+    Allergies/Sickness: {allergy}
     """
+
     mail.send(msg)
 
-    return redirect(url_for('thankyou', name=name))
+    return redirect(url_for('thankyou', name=child_name))
+
 
 if __name__ == '__main__':
     app.run(debug=True)

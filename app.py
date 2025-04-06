@@ -61,6 +61,26 @@ def download_csv():
 #             writer.writerow([child_name, parent_name, email, phone, message])
 
 #         return render_template('thankyou.html')
+@app.route('/admission')
+def admission():
+    return render_template('admission_form.html')
+
+
+@app.route('/submit_admission', methods=['POST'])
+def submit_admission():
+    data = request.form.to_dict()
+    # Add timestamp
+    from datetime import datetime
+    data['timestamp'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+    # Save to CSV or Google Sheets
+    with open('admissions.csv', 'a', newline='') as f:
+        writer = csv.writer(f)
+        if f.tell() == 0:  # If file is empty, write headers
+            writer.writerow(data.keys())
+        writer.writerow(data.values())
+
+    return render_template('thankyou.html', name=data.get('child_name'))
 
 
 

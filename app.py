@@ -2,6 +2,9 @@ import os
 from flask import Flask, render_template, request, redirect, url_for
 from flask_mail import Mail, Message
 from dotenv import load_dotenv
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from io import BytesIO
 
 load_dotenv()  # Load environment variables from .env (for local testing)
 
@@ -45,22 +48,29 @@ def submit_enquiry():
     phone = request.form['phone']
     message = request.form['message']
 
-    # Send Email
+    # === 1. Generate PDF in memory ===
+    pdf_buffer = BytesIO()
+    pdf = canvas.Canvas(pdf_buffer, pagesize=letter)
+    pdf.setFont("Helvetica", 12)
+    pdf.drawString(100, 750, "New Enquiry Form Submission")
+    pdf.drawString(100, 730, f"Child Name: {child_name}")
+    pdf.drawString(100, 710, f"Parent Name: {parent_name}")
+    pdf.drawString(100, 690, f"Email: {email}")
+    pdf.drawString(100, 670, f"Phone: {phone}")
+    pdf.drawString(100, 650, f"Message: {message}")
+    pdf.save()
+    pdf_buffer.seek(0)
+
+    # === 2. Email the PDF ===
     msg = Message(subject="New Enquiry Form Submission",
                   sender=app.config['MAIL_USERNAME'],
                   recipients=[app.config['MAIL_USERNAME']])
-    msg.body = f"""
-    Enquiry Form Details:
-
-    Child's Name: {child_name}
-    Parent's Name: {parent_name}
-    Email: {email}
-    Phone: {phone}
-    Message: {message}
-    """
+    msg.body = f"New Enquiry received from {parent_name}."
+    msg.attach("enquiry_form.pdf", "application/pdf", pdf_buffer.read())
     mail.send(msg)
 
-    return redirect(url_for('thankyou', name=child_name))
+    # === 3. Show Thank You + Print Option ===
+    return render_template("thankyou.html", name=child_name, show_print=True)
 
 @app.route('/admission')
 def admission_form():
@@ -76,7 +86,7 @@ def submit_admission():
     aadhar = request.form['aadhar']
     father_mobile = request.form['father_mobile']
     mother_mobile = request.form['mother_mobile']
-    admission_to = request.form.getlist('admission_to')  # checkboxes return a list
+    admission_to = request.form.getlist('admission_to')  # checkbox list
     last_school = request.form['last_school']
     father_name = request.form['father_name']
     father_qualification = request.form['father_qualification']
@@ -89,42 +99,51 @@ def submit_admission():
     siblings = request.form['siblings']
     allergy = request.form['allergy']
 
-    # Prepare the message
+    # === 1. Generate PDF ===
+    pdf_buffer = BytesIO()
+    pdf = canvas.Canvas(pdf_buffer, pagesize=letter)
+    pdf.setFont("Helvetica", 11)
+    y = 770
+
+    def draw_line(label, value):
+        nonlocal y
+        pdf.drawString(50, y, f"{label}: {value}")
+        y -= 20
+
+    draw_line("Form No", form_no)
+    draw_line("Standard", standard)
+    draw_line("Date", date)
+    draw_line("Child's Name", child_name)
+    draw_line("Date of Birth", dob)
+    draw_line("Aadhar No", aadhar)
+    draw_line("Father's Mobile", father_mobile)
+    draw_line("Mother's Mobile", mother_mobile)
+    draw_line("Admission To", ', '.join(admission_to))
+    draw_line("Last School Attended", last_school)
+    draw_line("Father's Name", father_name)
+    draw_line("Father's Qualification", father_qualification)
+    draw_line("Father's Occupation", father_occupation)
+    draw_line("Father's Address", father_address)
+    draw_line("Mother's Name", mother_name)
+    draw_line("Mother's Qualification", mother_qualification)
+    draw_line("Mother's Occupation", mother_occupation)
+    draw_line("Mother's Address", mother_address)
+    draw_line("Siblings", siblings)
+    draw_line("Allergy", allergy)
+
+    pdf.save()
+    pdf_buffer.seek(0)
+
+    # === 2. Send Email ===
     msg = Message(subject="New Admission Form Submission",
                   sender=app.config['MAIL_USERNAME'],
                   recipients=[app.config['MAIL_USERNAME']])
-    msg.body = f"""
-    Admission Form Submission:
-
-    Form No: {form_no}
-    Standard: {standard}
-    Date: {date}
-    Child Name: {child_name}
-    Date of Birth: {dob}
-    Aadhar No: {aadhar}
-    Father's Mobile: {father_mobile}
-    Mother's Mobile: {mother_mobile}
-    Admission Sought To: {', '.join(admission_to)}
-    Last School Attended: {last_school}
-
-    Father's Name: {father_name}
-    Father's Qualification: {father_qualification}
-    Father's Occupation: {father_occupation}
-    Father's Occupation Address: {father_address}
-
-    Mother's Name: {mother_name}
-    Mother's Qualification: {mother_qualification}
-    Mother's Occupation: {mother_occupation}
-    Mother's Occupation Address: {mother_address}
-
-    Siblings Studying In: {siblings}
-    Allergies/Sickness: {allergy}
-    """
-
+    msg.body = f"New admission form submitted for {child_name}."
+    msg.attach("admission_form.pdf", "application/pdf", pdf_buffer.read())
     mail.send(msg)
 
-    return redirect(url_for('thankyou', name=child_name))
-
+    # === 3. Redirect to Thank You with print option ===
+    return render_template("thankyou.html", name=child_name, show_print=True)
 
 if __name__ == '__main__':
     app.run(debug=True)

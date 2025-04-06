@@ -137,3 +137,16 @@ input, textarea {
   border: 1px solid #ccc;
 }
 
+.btn-admission {
+    display: inline-block;
+    padding: 12px 20px;
+    margin-top: 20px;
+    background-color: #0d47a1;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 16px;
+}
+.btn-admission:hover {
+    background-color: #1565c0;
+}

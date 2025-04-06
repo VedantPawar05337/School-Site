@@ -1,15 +1,18 @@
-from flask import Flask, render_template, request
-from flask_mail import Mail, Message
 import os
+from flask import Flask, render_template, request, redirect, url_for
+from flask_mail import Mail, Message
+from dotenv import load_dotenv
+
+load_dotenv()  # Load environment variables from .env (for local testing)
 
 app = Flask(__name__)
 
-# Email Configuration
+# Flask-Mail Configuration
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')  # Your Gmail
-app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')  # Gmail App Password
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
 
 mail = Mail(app)
 
@@ -25,52 +28,61 @@ def about():
 def contact():
     return render_template('contact.html')
 
-@app.route('/admission')
-def admission():
-    return render_template('admission.html')
+@app.route('/thankyou')
+def thankyou():
+    name = request.args.get('name', 'User')
+    return render_template('thankyou.html', name=name)
 
-# --- Enquiry Form Submission ---
 @app.route('/submit_enquiry', methods=['POST'])
 def submit_enquiry():
     name = request.form['name']
-    dob = request.form['dob']
-    mobile_father = request.form['mobile_father']
-    mobile_mother = request.form['mobile_mother']
-
-    msg = Message(subject='📩 New Enquiry Submission',
-                  sender=app.config['MAIL_USERNAME'],
-                  recipients=[app.config['MAIL_USERNAME']],
-                  body=f'''New enquiry received:
-
-👶 Name: {name}
-🎂 Date of Birth: {dob}
-📱 Father’s Mobile: {mobile_father}
-📱 Mother’s Mobile: {mobile_mother}
-''')
-    mail.send(msg)
-    return render_template('thankyou.html', name=name)
-
-# --- Admission Form Submission ---
-@app.route('/submit_admission', methods=['POST'])
-def submit_admission():
-    student_name = request.form['student_name']
-    dob = request.form['dob']
-    address = request.form['address']
     email = request.form['email']
     phone = request.form['phone']
-    parent_name = request.form['parent_name']
+    message = request.form['message']
 
-    msg = Message(subject='📝 New Admission Form Submission',
+    # Send Email
+    msg = Message(subject="New Enquiry Form Submission",
                   sender=app.config['MAIL_USERNAME'],
-                  recipients=[app.config['MAIL_USERNAME']],
-                  body=f'''New admission form submitted:
+                  recipients=[app.config['MAIL_USERNAME']])
+    msg.body = f"""
+    Enquiry Form Details:
 
-👦 Student Name: {student_name}
-🎂 DOB: {dob}
-🏠 Address: {address}
-📧 Email: {email}
-📞 Phone: {phone}
-👨‍👩‍👧 Parent/Guardian: {parent_name}
-''')
+    Name: {name}
+    Email: {email}
+    Phone: {phone}
+    Message: {message}
+    """
     mail.send(msg)
-    return render_template('thankyou.html', name=student_name)
+
+    return redirect(url_for('thankyou', name=name))
+
+@app.route('/submit_admission', methods=['POST'])
+def submit_admission():
+    name = request.form['name']
+    email = request.form['email']
+    phone = request.form['phone']
+    dob = request.form['dob']
+    address = request.form['address']
+    father_name = request.form['father_name']
+    mother_name = request.form['mother_name']
+
+    msg = Message(subject="New Admission Form Submission",
+                  sender=app.config['MAIL_USERNAME'],
+                  recipients=[app.config['MAIL_USERNAME']])
+    msg.body = f"""
+    Admission Form Details:
+
+    Name: {name}
+    Email: {email}
+    Phone: {phone}
+    DOB: {dob}
+    Address: {address}
+    Father's Name: {father_name}
+    Mother's Name: {mother_name}
+    """
+    mail.send(msg)
+
+    return redirect(url_for('thankyou', name=name))
+
+if __name__ == '__main__':
+    app.run(debug=True)
